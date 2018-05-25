@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import motor.motor_asyncio
 
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
@@ -29,6 +30,19 @@ async def cats(message: types.Message):
 @dp.message_handler()
 async def echo(message: types.Message):
     await bot.send_message(message.chat.id, message.text)
+
+
+@dp.message_handler(commands='register')
+async def register_user(message: types.Message):
+    client = motor.motor_asyncio.AsyncIOMotorClient()
+    db = client.bot_database
+    await db.test_chat.insert_one({
+        "user_id": message.from_user.id,
+        "user_firstname": message.from_user.first_name,
+        "count": 0
+    })
+    print("Output of None:" + await db.test_chat.find_one({"user_id": "no valid id"}))
+
 
 
 if __name__ == '__main__':
