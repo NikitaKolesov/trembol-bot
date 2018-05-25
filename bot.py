@@ -46,7 +46,7 @@ async def roll_dice(message: types.Message):
     if True: # not roll_locked(message.chat.title):
         users_count = await db.test_chat.find({"status": "active"}).count()
         logger.info("Users count: {}".format(users_count))
-        winner_id = db.test_chat.find_one({"status": "active"}).skip(randint(users_count))
+        winner_id = await db.test_chat.find_one({"status": "active"}).skip(randint(users_count))
         await db.test_chat.update_one({"user_id": str(winner_id)})
         logger.info("Winner user_id: {}".format(winner_id))
     else:
