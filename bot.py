@@ -8,7 +8,8 @@ from aiogram.utils.executor import start_polling
 
 API_TOKEN = '489175236:AAEF7xSRXtmostkUlttKDN3sBQQJPmEngcQ'
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logger = logging.getLogger("__main__")
 
 loop = asyncio.get_event_loop()
 bot = Bot(token=API_TOKEN, loop=loop)
@@ -24,13 +25,13 @@ async def send_welcome(message: types.Message):
 async def register_user(message: types.Message):
     client = motor.motor_asyncio.AsyncIOMotorClient()
     db = client[message.chat.title]
-    print(str(message.chat.first_name), str(message.chat.last_name), str(message.chat.title))
     if await db.test_chat.find_one({"user_id": message.from_user.id}) is None:
         await db.test_chat.insert_one({
             "user_id": message.from_user.id,
             "user_firstname": message.from_user.first_name,
             "count": 0
         })
+        logger.info("Player {} registered in {}".format(message.from_user.first_name, message.chat.title))
     else:
         await message.reply("You are already registered.")
 
