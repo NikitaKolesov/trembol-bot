@@ -37,7 +37,6 @@ async def echo(message: types.Message):
 async def register_user(message: types.Message):
     client = motor.motor_asyncio.AsyncIOMotorClient()
     db = client.bot_database
-    if
     await db.test_chat.insert_one({
         "user_id": message.from_user.id,
         "user_firstname": message.from_user.first_name,
