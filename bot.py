@@ -5,7 +5,7 @@ from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils.executor import start_polling
 
-API_TOKEN = 'BOT TOKEN HERE'
+API_TOKEN = '489175236:AAEF7xSRXtmostkUlttKDN3sBQQJPmEngcQ'
 
 logging.basicConfig(level=logging.INFO)
 
