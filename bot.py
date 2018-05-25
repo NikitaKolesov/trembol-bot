@@ -15,10 +15,6 @@ bot = Bot(token=API_TOKEN, loop=loop)
 dp = Dispatcher(bot)
 
 
-async def is_registered():
-
-
-
 @dp.message_handler(commands=['start', 'help'])
 async def send_welcome(message: types.Message):
     await message.reply("Hi!\nI'm EchoBot!\nPowered by aiogram.")
