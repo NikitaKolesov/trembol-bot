@@ -15,6 +15,10 @@ bot = Bot(token=API_TOKEN, loop=loop)
 dp = Dispatcher(bot)
 
 
+async def is_registered():
+
+
+
 @dp.message_handler(commands=['start', 'help'])
 async def send_welcome(message: types.Message):
     await message.reply("Hi!\nI'm EchoBot!\nPowered by aiogram.")
@@ -27,22 +31,23 @@ async def cats(message: types.Message):
                              reply_to_message_id=message.message_id)
 
 
+
+@dp.message_handler()
+async def echo(message: types.Message):
+    await bot.send_message(message.chat.id, message.text)
+
+
 @dp.message_handler(commands=['register'])
 async def register_user(message: types.Message):
     client = motor.motor_asyncio.AsyncIOMotorClient()
     db = client.bot_database
+    if
     await db.test_chat.insert_one({
         "user_id": message.from_user.id,
         "user_firstname": message.from_user.first_name,
         "count": 0
     })
     print("Output of None:" + await db.test_chat.find_one({"user_id": "no valid id"}))
-
-
-@dp.message_handler()
-async def echo(message: types.Message):
-    await bot.send_message(message.chat.id, message.text)
-
 
 
 if __name__ == '__main__':
