@@ -24,7 +24,7 @@ async def send_welcome(message: types.Message):
 async def register_user(message: types.Message):
     client = motor.motor_asyncio.AsyncIOMotorClient()
     db = client.bot_database
-    if await db.test_chat.find_one({"user_id": message.from_user.id}) != None:
+    if await db.test_chat.find_one({"user_id": message.from_user.id}) is None:
         await db.test_chat.insert_one({
             "user_id": message.from_user.id,
             "user_firstname": message.from_user.first_name,
