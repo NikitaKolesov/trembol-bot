@@ -22,7 +22,7 @@ async def send_welcome(message: types.Message):
 
 
 @dp.message_handler(commands=['register'])
-async def register_user(message: types.Message):
+async def register_user(message: types.Message, client):
     client = motor.motor_asyncio.AsyncIOMotorClient()
     db = client[message.chat.title]
     if await db.test_chat.find_one({"user_id": message.from_user.id}) is None:
@@ -31,9 +31,20 @@ async def register_user(message: types.Message):
             "user_firstname": message.from_user.first_name,
             "count": 0
         })
-        logger.info("Player {} registered in {}".format(message.from_user.first_name, message.chat.title))
+        logger.info("Player {} registered in group {}".format(message.from_user.first_name, message.chat.title))
     else:
         await message.reply("You are already registered.")
+
+
+def roll_locked(chat_title):
+    pass
+
+@dp.message_handler(commands=['roll'])
+async def roll_dice(message: types.Message):
+    if False: # not roll_locked(message.chat.title):
+        pass
+    else:
+        await bot.send_message(message.chat.id, "Poll is blocked for today")
 
 
 @dp.message_handler(regexp='(^cat[s]?$|puss)')
@@ -49,6 +60,7 @@ async def echo(message: types.Message):
 
 
 if __name__ == '__main__':
+    client = motor.motor_asyncio.AsyncIOMotorClient()
     start_polling(dp, loop=loop, skip_updates=True)
 
     # Also you can use another execution method
