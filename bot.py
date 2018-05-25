@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import motor.motor_asyncio
+from random import randint
 
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
@@ -41,8 +42,13 @@ def roll_locked(chat_title):
 
 @dp.message_handler(commands=['roll'])
 async def roll_dice(message: types.Message):
-    if False: # not roll_locked(message.chat.title):
-        pass
+    db = motor.motor_asyncio.AsyncIOMotorClient()[message.chat.title]
+    if True: # not roll_locked(message.chat.title):
+        users_count = await db.test_chat.find({"status": "active"}).count()
+        logger.info("Users count: {}".format(users_count))
+        winner_id = db.test_chat.find_one({"status": "active"}).skip(randint(users_count))
+        await db.test_chat.update_one({"user_id": str(winner_id)})
+        logger.info("Winner user_id: {}".format(winner_id))
     else:
         await bot.send_message(message.chat.id, "Poll is blocked for today")
 
