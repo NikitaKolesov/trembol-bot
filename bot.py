@@ -50,7 +50,7 @@ async def roll_locked(chat_title):
 @dp.message_handler(commands=['roll'])
 async def roll_dice(message: types.Message):
     db = motor.motor_asyncio.AsyncIOMotorClient()[message.chat.title]
-    if roll_locked(message.chat.title): # not roll_locked(message.chat.title):
+    if await roll_locked(message.chat.title): # not roll_locked(message.chat.title):
         user_count = 2
         winner = (await db.test_chat.find({"status": "active"}).limit(1).skip(randint(0,user_count - 1)).to_list(length=20))[0]
         logger.info("Winner: {}".format(winner))
