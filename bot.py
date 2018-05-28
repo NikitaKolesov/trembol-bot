@@ -37,13 +37,18 @@ async def register_user(message: types.Message):
         await message.reply("You are already registered.")
 
 
-def roll_locked(chat_title):
-    pass
+async def roll_locked(chat_title):
+    db = motor.motor_asyncio.AsyncIOMotorClient()[chat_title]
+    if await db.test_chat.find_one({"lock": 1}) is None:
+        return False
+    else:
+        return True
+
 
 @dp.message_handler(commands=['roll'])
 async def roll_dice(message: types.Message):
     db = motor.motor_asyncio.AsyncIOMotorClient()[message.chat.title]
-    if True: # not roll_locked(message.chat.title):
+    if roll_locked(message.chat.title): # not roll_locked(message.chat.title):
         user_count = 2
         winner = (await db.test_chat.find({"status": "active"}).limit(1).skip(randint(0,user_count - 1)).to_list(length=20))[0]
         logger.info("Winner: {}".format(winner))
