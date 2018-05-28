@@ -39,7 +39,9 @@ async def register_user(message: types.Message):
 
 async def roll_locked(chat_title):
     db = motor.motor_asyncio.AsyncIOMotorClient()[chat_title]
-    if await db.test_chat.find_one({"lock": 1}) is None:
+    que = await db.test_chat.find_one({"lock": 1})
+    print(que)
+    if que is None:
         return False
     else:
         return True
