@@ -23,8 +23,7 @@ async def send_welcome(message: types.Message):
 
 
 @dp.message_handler(commands=['register'])
-async def register_user(message: types.Message):
-    client = motor.motor_asyncio.AsyncIOMotorClient()
+async def register_user(message: types.Message, client):
     db = client[message.chat.title]
     if await db.test_chat.find_one({"user_id": message.from_user.id}) is None:
         await db.test_chat.insert_one({
@@ -73,6 +72,7 @@ async def echo(message: types.Message):
 
 
 if __name__ == '__main__':
+    client = motor.motor_asyncio.AsyncIOMotorClient()
     start_polling(dp, loop=loop, skip_updates=True)
 
     # Also you can use another execution method
