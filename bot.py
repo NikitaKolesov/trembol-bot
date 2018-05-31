@@ -14,7 +14,7 @@ DB_NAME = "Game"
 LIST_LENGTH = 20
 database = motor.motor_asyncio.AsyncIOMotorClient()[DB_NAME]
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("__main__")
 
 loop = asyncio.get_event_loop()
@@ -75,12 +75,12 @@ async def roll_dice(message: types.Message):
             winner = (await database[message.chat.title].find({"status": "active"}).limit(1).skip(
                 randint(0, user_count - 1)).to_list(length=LIST_LENGTH))[0]
             await database[message.chat.title].update_one({"user_id": winner["user_id"]}, {"$inc": {"count": 1}})
+            await bot.send_message(message.chat.id, "Сегодня победил {}".format(winner["user_firstname"]))
             logger.info("Winner {} count {}".format(winner["user_firstname"], winner["count"] + 1))
     else:
         await bot.send_message(message.chat.id, "Poll is blocked for today")
 
 
-# TODO implement stats command
 @dp.message_handler(commands=['stats'])
 async def show_statistics(message: types.Message):
     """Display statistics of players in order"""
@@ -92,7 +92,7 @@ async def show_statistics(message: types.Message):
             "$orderby": {"count": -1}
         }).to_list(length=LIST_LENGTH)
         players = [(i["user_firstname"], i["count"]) for i in players]
-
+        # TODO dsiplay message in format
         await bot.send_message(message.chat.id, str(players))
 
 
