@@ -51,6 +51,7 @@ async def register_user(message: types.Message):
         await database[message.chat.title].insert_one({
             "user_id": message.from_user.id,
             "user_firstname": message.from_user.first_name,
+            "status": "active",
             "count": 0
         })
         logger.info("Player {} registered in group {}".format(message.from_user.first_name, message.chat.title))
