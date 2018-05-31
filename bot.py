@@ -80,7 +80,7 @@ async def show_statistics(message: types.Message):
     if database[message.chat.title].find_one({"status": "active"}) is None:
         await bot.send_message(message.chat.id, "Нет зарегистрировавшихся игроков")
     else:
-        players = await database[message.chat.title].find({"status": "active"}).to_list(length=20)
+        players = await database[message.chat.title].find({ "$query": {"status": "active"}, "$orderby": {"count": 1}}).to_list(length=20)
         players = [(i["user_firstname"], i["count"]) for i in players]
         await bot.send_message(message.chat.id, str(players))
 
