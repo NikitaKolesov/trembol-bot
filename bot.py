@@ -59,19 +59,27 @@ async def register_user(message: types.Message):
         })
         logger.info("Player {} registered in group {}".format(message.from_user.first_name, message.chat.title))
     else:
-        await message.reply("You are already registered.")
+        await message.reply("Вы уже зарегистрировались.")
 
 
 @dp.message_handler(commands=['roll'])
 async def roll_dice(message: types.Message):
-    if not await is_locked(message.chat.title): # not roll_locked(message.chat.title):
+    if not await is_locked(message.chat.title):
         user_count = 2
         winner = (await database[message.chat.title].find({"status": "active"}).limit(1).skip(randint(0,user_count - 1)).to_list(length=20))[0]
-        # logger.info("Winner: {}".format(winner))
         await database[message.chat.title].update_one({"user_id": winner["user_id"]}, {"$inc": {"count": 1}})
         logger.info("Winner {} count {}".format(winner["user_firstname"], winner["count"] + 1))
     else:
         await bot.send_message(message.chat.id, "Poll is blocked for today")
+
+
+# TODO implement stats command
+@dp.message_handler(commands=['stats'])
+async def show_statistics(message: types.Message):
+    """Display statistics of players in order"""
+    if database[message.chat.title].find_one({"status": "active"}) is None:
+        await bot.send_message(message.chat.id, "Нет зарегистрировавшихся игроков")
+    pass
 
 
 @dp.message_handler(regexp='(^cat[s]?$|puss)')
