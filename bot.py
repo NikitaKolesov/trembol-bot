@@ -30,6 +30,7 @@ async def is_locked(chat_title):
         })
         lock = await database[chat_title].find_one({"lock": 1})
     delta = datetime.now() - lock["date"]
+    logger.info("Delta is {}".format(delta))
     if delta <= LOCK_PERIOD_TEST:
         return True
     else:
@@ -37,6 +38,7 @@ async def is_locked(chat_title):
         await database[chat_title].update_one({"lock": 1}, {
             "$set": {"date": new_date}
         })
+        logger.info("New date for lock is set {}".format(new_date))
         return False
 
 
@@ -64,7 +66,7 @@ async def roll_dice(message: types.Message):
     if not await is_locked(message.chat.title): # not roll_locked(message.chat.title):
         user_count = 2
         winner = (await database[message.chat.title].find({"status": "active"}).limit(1).skip(randint(0,user_count - 1)).to_list(length=20))[0]
-        logger.info("Winner: {}".format(winner))
+        # logger.info("Winner: {}".format(winner))
         await database[message.chat.title].update_one({"user_id": winner["user_id"]}, {"$inc": {"count": 1}})
         logger.info("Winner {} count {}".format(winner["user_firstname"], winner["count"] + 1))
     else:
