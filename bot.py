@@ -91,9 +91,12 @@ async def show_statistics(message: types.Message):
             "$query": {"status": "active"},
             "$orderby": {"count": -1}
         }).to_list(length=LIST_LENGTH)
+        # TODO reimplement formatting
         players = [(i["user_firstname"], i["count"]) for i in players]
-        # TODO dsiplay message in format
-        await bot.send_message(message.chat.id, str(players))
+        reply = ""
+        for i in players:
+            reply += "{} - {}\n".format(i[0], i[1])
+        await bot.send_message(message.chat.id, reply)
 
 
 @dp.message_handler(regexp='(^cat[s]?$|puss)')
