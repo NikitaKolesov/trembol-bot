@@ -11,6 +11,7 @@ API_TOKEN = '489175236:AAEF7xSRXtmostkUlttKDN3sBQQJPmEngcQ'
 LOCK_PERIOD_TEST = timedelta(minutes=1)
 LOCK_PERIOD = timedelta(1)
 DB_NAME = "Game"
+LIST_LENGTH = 20
 database = motor.motor_asyncio.AsyncIOMotorClient()[DB_NAME]
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -65,10 +66,16 @@ async def register_user(message: types.Message):
 @dp.message_handler(commands=['roll'])
 async def roll_dice(message: types.Message):
     if not await is_locked(message.chat.title):
-        user_count = 2
-        winner = (await database[message.chat.title].find({"status": "active"}).limit(1).skip(randint(0,user_count - 1)).to_list(length=20))[0]
-        await database[message.chat.title].update_one({"user_id": winner["user_id"]}, {"$inc": {"count": 1}})
-        logger.info("Winner {} count {}".format(winner["user_firstname"], winner["count"] + 1))
+        user_count = await database[message.chat.title].find({"status": "active"}).count()
+        if user_count == 0:
+            await bot.send_message(message.chat.id, "Нет зарегистрировавшихся игроков")
+        elif user_count == 1:
+            await bot.send_message(message.chat.id, "Только один игрок зарегистрировался 😐")
+        else:
+            winner = (await database[message.chat.title].find({"status": "active"}).limit(1).skip(
+                randint(0, user_count - 1)).to_list(length=LIST_LENGTH))[0]
+            await database[message.chat.title].update_one({"user_id": winner["user_id"]}, {"$inc": {"count": 1}})
+            logger.info("Winner {} count {}".format(winner["user_firstname"], winner["count"] + 1))
     else:
         await bot.send_message(message.chat.id, "Poll is blocked for today")
 
@@ -80,8 +87,12 @@ async def show_statistics(message: types.Message):
     if database[message.chat.title].find_one({"status": "active"}) is None:
         await bot.send_message(message.chat.id, "Нет зарегистрировавшихся игроков")
     else:
-        players = await database[message.chat.title].find({ "$query": {"status": "active"}, "$orderby": {"count": 1}}).to_list(length=20)
+        players = await database[message.chat.title].find({
+            "$query": {"status": "active"},
+            "$orderby": {"count": -1}
+        }).to_list(length=LIST_LENGTH)
         players = [(i["user_firstname"], i["count"]) for i in players]
+
         await bot.send_message(message.chat.id, str(players))
 
 
