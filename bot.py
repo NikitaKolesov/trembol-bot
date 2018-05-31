@@ -14,7 +14,7 @@ DB_NAME = "Game"
 LIST_LENGTH = 20
 database = motor.motor_asyncio.AsyncIOMotorClient()[DB_NAME]
 
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("__main__")
 
 loop = asyncio.get_event_loop()
@@ -22,14 +22,14 @@ bot = Bot(token=API_TOKEN, loop=loop)
 dp = Dispatcher(bot)
 
 
-async def is_locked(chat_title):
-    lock = await database[chat_title].find_one({"lock": 1})
+async def is_locked(db_id):
+    lock = await database[db_id].find_one({"lock": 1})
     if lock is None:
-        await database[chat_title].insert_one({
+        await database[db_id].insert_one({
             "lock": 1,
             "date": datetime(2018, 1, 1)
         })
-        lock = await database[chat_title].find_one({"lock": 1})
+        lock = await database[db_id].find_one({"lock": 1})
     delta = datetime.now() - lock["date"]
     logger.info("Delta is {}".format(delta))
     if delta <= LOCK_PERIOD_TEST:
@@ -37,7 +37,7 @@ async def is_locked(chat_title):
     else:
         # new_date = datetime.combine(datetime.now().date(), datetime.min.time()) + LOCK_PERIOD_TEST
         new_date = datetime.now() + LOCK_PERIOD_TEST # TESTING
-        await database[chat_title].update_one({"lock": 1}, {
+        await database[db_id].update_one({"lock": 1}, {
             "$set": {"date": new_date}
         })
         logger.info("New date for lock is set {}".format(new_date))
