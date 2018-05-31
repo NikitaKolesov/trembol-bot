@@ -34,7 +34,7 @@ async def is_locked(chat_title):
     if delta <= LOCK_PERIOD_TEST:
         return True
     else:
-        new_date = datetime.combine(datetime.now().date(), datetime.min.time())
+        new_date = datetime.combine(datetime.now().date(), datetime.min.time()) + LOCK_PERIOD_TEST
         await database[chat_title].update_one({"lock": 1}, {
             "$set": {"date": new_date}
         })
