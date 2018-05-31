@@ -11,6 +11,7 @@ API_TOKEN = '489175236:AAEF7xSRXtmostkUlttKDN3sBQQJPmEngcQ'
 LOCK_PERIOD_TEST = timedelta(minutes=1)
 LOCK_PERIOD = timedelta(1)
 DB_NAME = "Game"
+database = motor.motor_asyncio.AsyncIOMotorClient()[DB_NAME]
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("__main__")
@@ -20,8 +21,7 @@ bot = Bot(token=API_TOKEN, loop=loop)
 dp = Dispatcher(bot)
 
 
-async def is_locked(database, chat_title):
-    # db = motor.motor_asyncio.AsyncIOMotorClient()[chat_title]
+async def is_locked(chat_title):
     lock = await database[chat_title].find_one({"lock": 1})
     if lock is None:
         await database[chat_title].insert_one({
@@ -46,10 +46,9 @@ async def send_welcome(message: types.Message):
 
 
 @dp.message_handler(commands=['register'])
-async def register_user(message: types.Message, client):
-    db = client[message.chat.title]
-    if await db.test_chat.find_one({"user_id": message.from_user.id}) is None:
-        await db.test_chat.insert_one({
+async def register_user(message: types.Message):
+    if await database[message.chat.title].find_one({"user_id": message.from_user.id}) is None:
+        await database[message.chat.title].insert_one({
             "user_id": message.from_user.id,
             "user_firstname": message.from_user.first_name,
             "count": 0
@@ -60,13 +59,12 @@ async def register_user(message: types.Message, client):
 
 
 @dp.message_handler(commands=['roll'])
-async def roll_dice(database, message: types.Message):
-    db = motor.motor_asyncio.AsyncIOMotorClient()[message.chat.title]
-    if not await is_locked(database, message.chat.title): # not roll_locked(message.chat.title):
+async def roll_dice(message: types.Message):
+    if not await is_locked(message.chat.title): # not roll_locked(message.chat.title):
         user_count = 2
-        winner = (await db.test_chat.find({"status": "active"}).limit(1).skip(randint(0,user_count - 1)).to_list(length=20))[0]
+        winner = (await database[message.chat.title].find({"status": "active"}).limit(1).skip(randint(0,user_count - 1)).to_list(length=20))[0]
         logger.info("Winner: {}".format(winner))
-        await db.test_chat.update_one({"user_id": winner["user_id"]}, {"$inc": {"count": 1}})
+        await database[message.chat.title].update_one({"user_id": winner["user_id"]}, {"$inc": {"count": 1}})
         logger.info("Winner {} count {}".format(winner["user_firstname"], winner["count"] + 1))
     else:
         await bot.send_message(message.chat.id, "Poll is blocked for today")
@@ -85,7 +83,6 @@ async def echo(message: types.Message):
 
 
 if __name__ == '__main__':
-    database = motor.motor_asyncio.AsyncIOMotorClient()[DB_NAME]
     start_polling(dp, loop=loop, skip_updates=True)
 
     # Also you can use another execution method
