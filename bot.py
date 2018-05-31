@@ -26,7 +26,7 @@ async def is_locked(chat_title):
     if lock is None:
         await database[chat_title].insert_one({
             "lock": 1,
-            "date": datetime(2018)
+            "date": datetime(2018, 1, 1)
         })
         lock = await database[chat_title].find_one({"lock": 1})
     delta = datetime.now() - lock["date"]
