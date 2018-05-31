@@ -81,6 +81,7 @@ async def show_statistics(message: types.Message):
         await bot.send_message(message.chat.id, "Нет зарегистрировавшихся игроков")
     else:
         players = await database[message.chat.title].find({"status": "active"}).to_list(length=20)
+        players = [(i["user_firstname"], i["count"]) for i in players]
         await bot.send_message(message.chat.id, str(players))
 
 
