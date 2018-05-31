@@ -1,13 +1,16 @@
 import asyncio
 import logging
+from datetime import datetime, timedelta
 import motor.motor_asyncio
 from random import randint
-
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils.executor import start_polling
 
 API_TOKEN = '489175236:AAEF7xSRXtmostkUlttKDN3sBQQJPmEngcQ'
+LOCK_PERIOD_TEST = timedelta(minutes=1)
+LOCK_PERIOD = timedelta(1)
+DB_NAME = "Game"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("__main__")
@@ -15,6 +18,26 @@ logger = logging.getLogger("__main__")
 loop = asyncio.get_event_loop()
 bot = Bot(token=API_TOKEN, loop=loop)
 dp = Dispatcher(bot)
+
+
+async def is_locked(database, chat_title):
+    # db = motor.motor_asyncio.AsyncIOMotorClient()[chat_title]
+    lock = await database[chat_title].find_one({"lock": 1})
+    if lock is None:
+        await database[chat_title].insert_one({
+            "lock": 1,
+            "date": datetime(2018)
+        })
+        lock = await database[chat_title].find_one({"lock": 1})
+    delta = datetime.now() - lock["date"]
+    if delta <= LOCK_PERIOD_TEST:
+        return True
+    else:
+        new_date = datetime.combine(datetime.now().date(), datetime.min.time())
+        await database[chat_title].update_one({"lock": 1}, {
+            "$set": {"date": new_date}
+        })
+        return False
 
 
 @dp.message_handler(commands=['start', 'help'])
@@ -36,20 +59,10 @@ async def register_user(message: types.Message, client):
         await message.reply("You are already registered.")
 
 
-async def roll_locked(chat_title):
-    db = motor.motor_asyncio.AsyncIOMotorClient()[chat_title]
-    que = await db.test_chat.find_one({"lock": 1})
-    print(que)
-    if que is None:
-        return False
-    else:
-        return True
-
-
 @dp.message_handler(commands=['roll'])
-async def roll_dice(message: types.Message):
+async def roll_dice(database, message: types.Message):
     db = motor.motor_asyncio.AsyncIOMotorClient()[message.chat.title]
-    if not await roll_locked(message.chat.title): # not roll_locked(message.chat.title):
+    if not await is_locked(database, message.chat.title): # not roll_locked(message.chat.title):
         user_count = 2
         winner = (await db.test_chat.find({"status": "active"}).limit(1).skip(randint(0,user_count - 1)).to_list(length=20))[0]
         logger.info("Winner: {}".format(winner))
@@ -72,7 +85,7 @@ async def echo(message: types.Message):
 
 
 if __name__ == '__main__':
-    client = motor.motor_asyncio.AsyncIOMotorClient()
+    database = motor.motor_asyncio.AsyncIOMotorClient()[DB_NAME]
     start_polling(dp, loop=loop, skip_updates=True)
 
     # Also you can use another execution method
