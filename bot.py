@@ -79,7 +79,9 @@ async def show_statistics(message: types.Message):
     """Display statistics of players in order"""
     if database[message.chat.title].find_one({"status": "active"}) is None:
         await bot.send_message(message.chat.id, "Нет зарегистрировавшихся игроков")
-    pass
+    else:
+        players = await database[message.chat.title].find({"status": "active"}).to_list(length=20)
+        await bot.send_message(message.chat.title, str(players))
 
 
 @dp.message_handler(regexp='(^cat[s]?$|puss)')
