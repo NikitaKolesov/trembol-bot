@@ -113,6 +113,7 @@ async def show_statistics(message: types.Message):
 async def remove_clutter(message: types.Message):
     await asyncio.sleep(REMOVE_CLUTTER_DELAY * 60)
     await bot.delete_message(message.chat.id, message.message_id)
+    logger.info("Message {} from {} has been deleted".format(message.message_id, message.from_user))
 # def remove_clutter(func, message: types.Message):
 #     async def wrapper(message):
 #         await func(message: types.Message)
