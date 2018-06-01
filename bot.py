@@ -84,7 +84,9 @@ async def roll_dice(message: types.Message):
                 await bot.send_message(message.chat.id, "Победитель этого часа - {}".format(winner["user_firstname"]))
             logger.info("Winner {} count {}".format(winner["user_firstname"], winner["count"] + 1))
     else:
-        await bot.send_message(message.chat.id, "Час ещё не прошёл")
+        left_time = datetime.now() - await database[message.chat.title].find_one({"lock": 1})["date"]
+        await bot.send_message(message.chat.id, "Час ещё не прошёл\n"
+                                                "Осталось {}".format(left_time))
 
 
 @dp.message_handler(commands=["stats"])
