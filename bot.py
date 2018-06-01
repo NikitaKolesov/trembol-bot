@@ -82,7 +82,8 @@ async def roll_dice(message: types.Message):
         else:
             winner = (await database[message.chat.title].find({"status": "active"}).limit(1).skip(
                 randint(0, user_count - 1)).to_list(length=LIST_LENGTH))[0]
-            await database[message.chat.title].update_one({"user_id": winner["user_id"]}, {"$inc": {"count": 1}})
+            await database[message.chat.title].update_one({"user_id": winner["user_id"]},
+                                                          {"$inc": {"count": 1}})
             if message.chat.title == "Трембол":
                 await bot.send_message(message.chat.id, "Пидор этого часа - {}".format(winner["user_firstname"]))
                 await remove_clutter(message)
@@ -93,7 +94,7 @@ async def roll_dice(message: types.Message):
     else:
         left_time = (await database[message.chat.title].find_one({"lock": 1}))["date"] - datetime.now()
         result = await bot.send_message(message.chat.id, "Час ещё не прошёл\n"
-                                                "Осталось {}".format(left_time))
+                                                         "Осталось {}".format(left_time))
         await remove_clutter(result, message)
 
 
@@ -104,10 +105,8 @@ async def show_statistics(message: types.Message):
         await bot.send_message(message.chat.id, "Нет зарегистрировавшихся игроков")
         await remove_clutter(message)
     else:
-        players = await database[message.chat.title].find({
-            "$query": {"status": "active"},
-            "$orderby": {"count": -1}
-        }).to_list(length=LIST_LENGTH)
+        players = await database[message.chat.title].find({"$query": {"status": "active"},
+                                                           "$orderby": {"count": -1}}).to_list(length=LIST_LENGTH)
         # TODO reimplement formatting
         players = [(i["user_firstname"], i["count"]) for i in players]
         reply = ""
@@ -118,6 +117,14 @@ async def show_statistics(message: types.Message):
 
 
 # TODO implement clear count handler
+@dp.message_handler(commands=["purge"])
+async def clear_stats(message: types.Message):
+    database[message.chat.title].update_many({"status": "active"},
+                                             {"$set": {"count": 0}})
+    logger.info("Count is reset in {}".format(message.chat.title))
+    pass
+
+
 async def remove_clutter(*messages: types.Message):
     await asyncio.sleep(REMOVE_CLUTTER_DELAY * 60)
     for message in messages:
