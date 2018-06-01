@@ -129,6 +129,7 @@ async def clear_stats(message: types.Message):
         await remove_clutter(result, message)
     else:
         await bot.send_message(message.chat.id, "Ты не администратор")
+        await bot.send_message(message.from_user.id, "Но можешь им стать")
 
 
 async def remove_clutter(*messages: types.Message):
