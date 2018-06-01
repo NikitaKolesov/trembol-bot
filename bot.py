@@ -12,7 +12,7 @@ LOCK_PERIOD_TEST = timedelta(hours=1)
 LOCK_PERIOD = timedelta(1)
 DB_NAME = "Game"
 LIST_LENGTH = 20
-REMOVE_CLUTTER_DELAY = 1 # clear delay in minutes
+REMOVE_CLUTTER_DELAY = 1  # clear delay in minutes
 database = motor.motor_asyncio.AsyncIOMotorClient()[DB_NAME]
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -21,6 +21,7 @@ logger = logging.getLogger("__main__")
 loop = asyncio.get_event_loop()
 bot = Bot(token=API_TOKEN, loop=loop)
 dp = Dispatcher(bot)
+
 
 # TODO implement spam period
 
@@ -39,7 +40,7 @@ async def is_locked(db_id):
         return True
     else:
         # new_date = datetime.combine(datetime.now().date(), datetime.min.time()) + LOCK_PERIOD_TEST
-        new_date = datetime.now() + LOCK_PERIOD_TEST # TESTING
+        new_date = datetime.now() + LOCK_PERIOD_TEST  # TESTING
         await database[db_id].update_one({"lock": 1}, {
             "$set": {"date": new_date}
         })
@@ -117,9 +118,8 @@ async def show_statistics(message: types.Message):
 
 
 # TODO implement clear count handler
-@dp.message_handler(commands=["purge"])
+@dp.message_handler(commands=["reset"])
 async def clear_stats(message: types.Message):
-    admins = []
     admins = (await database[message.chat.title].find_one({"admins": {"$exists": 1}}))["admins"]
     if message.from_user.id in admins:
         database[message.chat.title].update_many({"status": "active"},
@@ -128,20 +128,24 @@ async def clear_stats(message: types.Message):
         logger.info("Count is reset in {}".format(message.chat.title))
         await remove_clutter(result, message)
     else:
-        result = await message.reply("У тебя недостаточно прав ")
+        result1 = await message.reply("У тебя недостаточно прав 😡")
         await asyncio.sleep(2)
-        await bot.send_message(message.from_user.id, "Но мы можем договориться!\n"
-                                                     "Отправь косарик на сбер разработчику\n"
-                                                     "`79269244072`"
-                                                     "И админка считай уже у тебя в кармане")
-        await remove_clutter(result, message)
+        result2 = await message.reply("Но мы можем договориться! 😉\n"
+                                      "Отправь косарик на сбер разработчику\n"
+                                      "+79269244072\n"
+                                      "И админка считай уже у тебя в кармане")
+        await remove_clutter(result1, result2, message)
 
 
 async def remove_clutter(*messages: types.Message):
     await asyncio.sleep(REMOVE_CLUTTER_DELAY * 60)
     for message in messages:
         await bot.delete_message(message.chat.id, message.message_id)
-        logger.info("Message {} at {} from {} in {} has been deleted".format(message.message_id, message.date, message.from_user.username, message.chat.title))
+        logger.info("Message {} at {} from {} in {} has been deleted".format(message.message_id, message.date,
+                                                                             message.from_user.username,
+                                                                             message.chat.title))
+
+
 # def remove_clutter(func, message: types.Message):
 #     async def wrapper(message):
 #         await func(message: types.Message)
@@ -157,9 +161,9 @@ async def remove_clutter(*messages: types.Message):
 #                              reply_to_message_id=message.message_id)
 
 
-@dp.message_handler()
-async def echo(message: types.Message):
-    await bot.send_message(message.chat.id, message.text)
+# @dp.message_handler()
+# async def echo(message: types.Message):
+#     await bot.send_message(message.chat.id, message.text)
 
 
 if __name__ == '__main__':
