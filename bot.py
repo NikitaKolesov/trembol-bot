@@ -65,8 +65,8 @@ async def register_user(message: types.Message):
         await bot.send_message(message.chat.id, "{} зарегистрировался".format(message.from_user.first_name))
     else:
         result = await message.reply("Вы уже зарегистрировались.")
-        await remove_clutter(message)
         await remove_clutter(result)
+        await remove_clutter(message)
 
 
 @dp.message_handler(commands=["roll"])
@@ -114,7 +114,7 @@ async def show_statistics(message: types.Message):
 async def remove_clutter(message: types.Message):
     await asyncio.sleep(REMOVE_CLUTTER_DELAY * 60)
     await bot.delete_message(message.chat.id, message.message_id)
-    logger.info("Message {} from {} has been deleted".format(message.message_id, message.from_user.username))
+    logger.info("Message {} from {} in {} has been deleted".format(message.message_id, message.from_user.username, message.chat.title))
 # def remove_clutter(func, message: types.Message):
 #     async def wrapper(message):
 #         await func(message: types.Message)
