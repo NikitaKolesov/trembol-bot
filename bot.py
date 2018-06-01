@@ -35,7 +35,7 @@ async def is_locked(db_id):
         lock = await database[db_id].find_one({"lock": 1})
     delta = datetime.now() - lock["date"]
     logger.info("Delta is {}".format(delta))
-    if delta <= 0:
+    if delta <= timedelta(0):
         return True
     else:
         # new_date = datetime.combine(datetime.now().date(), datetime.min.time()) + LOCK_PERIOD_TEST
