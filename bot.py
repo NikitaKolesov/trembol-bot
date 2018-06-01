@@ -119,9 +119,13 @@ async def show_statistics(message: types.Message):
 # TODO implement clear count handler
 @dp.message_handler(commands=["purge"])
 async def clear_stats(message: types.Message):
-    database[message.chat.title].update_many({"status": "active"},
-                                             {"$set": {"count": 0}})
-    logger.info("Count is reset in {}".format(message.chat.title))
+    admins = []
+    admins = (await database[message.chat.title].find_one({"admins": {"$exists": 1}}))["admins"]
+    if message.from_user.id in admins:
+        database[message.chat.title].update_many({"status": "active"},
+                                                 {"$set": {"count": 0}})
+        await bot.send_message(message.chat.id, "Данные сброшены")
+        logger.info("Count is reset in {}".format(message.chat.title))
     pass
 
 
