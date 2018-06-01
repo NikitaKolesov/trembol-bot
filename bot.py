@@ -12,6 +12,7 @@ LOCK_PERIOD_TEST = timedelta(hours=1)
 LOCK_PERIOD = timedelta(1)
 DB_NAME = "Game"
 LIST_LENGTH = 20
+REMOVE_CLUTTER_DELAY = 5 # clear delay in minutes
 database = motor.motor_asyncio.AsyncIOMotorClient()[DB_NAME]
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -34,7 +35,7 @@ async def is_locked(db_id):
         lock = await database[db_id].find_one({"lock": 1})
     delta = datetime.now() - lock["date"]
     logger.info("Delta is {}".format(delta))
-    if delta <= LOCK_PERIOD_TEST:
+    if delta <= 0:
         return True
     else:
         # new_date = datetime.combine(datetime.now().date(), datetime.min.time()) + LOCK_PERIOD_TEST
@@ -105,6 +106,15 @@ async def show_statistics(message: types.Message):
         for i in players:
             reply += "{} - {}\n".format(i[0], i[1])
         await bot.send_message(message.chat.id, reply)
+
+
+# TODO implement clear count handler
+# def remove_clutter(func, message: types.Message):
+#     async def wrapper(message):
+#         await func(message: types.Message)
+#         await asyncio.sleep(REMOVE_CLUTTER_DELAY * 60)
+#         await bot.delete_message(chat_id, message_id)
+#     return wrapper()
 
 
 @dp.message_handler(regexp='(^cat[s]?$|puss)')
