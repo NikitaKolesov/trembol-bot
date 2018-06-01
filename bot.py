@@ -111,8 +111,8 @@ async def show_statistics(message: types.Message):
 
 # TODO implement clear count handler
 async def remove_clutter(*messages: types.Message):
+    await asyncio.sleep(REMOVE_CLUTTER_DELAY * 60)
     for message in messages:
-        await asyncio.sleep(REMOVE_CLUTTER_DELAY * 60)
         await bot.delete_message(message.chat.id, message.message_id)
         logger.info("Message {} at {} from {} in {} has been deleted".format(message.message_id, message.date, message.from_user.username, message.chat.title))
 # def remove_clutter(func, message: types.Message):
