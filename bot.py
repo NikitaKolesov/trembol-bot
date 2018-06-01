@@ -15,7 +15,10 @@ LIST_LENGTH = 20
 REMOVE_CLUTTER_DELAY = 1  # clear delay in minutes
 database = motor.motor_asyncio.AsyncIOMotorClient()[DB_NAME]
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+logging.basicConfig(level=logging.INFO,
+                    filename="/home/nkolesov/logfile.log",
+                    filemode="w",
+                    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("__main__")
 
 loop = asyncio.get_event_loop()
