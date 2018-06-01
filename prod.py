@@ -76,7 +76,10 @@ async def roll_dice(message: types.Message):
             winner = (await database[message.chat.title].find({"status": "active"}).limit(1).skip(
                 randint(0, user_count - 1)).to_list(length=LIST_LENGTH))[0]
             await database[message.chat.title].update_one({"user_id": winner["user_id"]}, {"$inc": {"count": 1}})
-            await bot.send_message(message.chat.id, "Пидор этого часа - {}".format(winner["user_firstname"]))
+            if message.chat.title == "Трембол":
+                await bot.send_message(message.chat.id, "Пидор этого часа - {}".format(winner["user_firstname"]))
+            else:
+                await bot.send_message(message.chat.id, "Победитель этого часа - {}".format(winner["user_firstname"]))
             logger.info("Winner {} count {}".format(winner["user_firstname"], winner["count"] + 1))
     else:
         await bot.send_message(message.chat.id, "Час ещё не прошёл")
