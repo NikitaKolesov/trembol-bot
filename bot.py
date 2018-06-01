@@ -12,7 +12,7 @@ LOCK_PERIOD_TEST = timedelta(hours=1)
 LOCK_PERIOD = timedelta(1)
 DB_NAME = "Game"
 LIST_LENGTH = 20
-REMOVE_CLUTTER_DELAY = 5 # clear delay in minutes
+REMOVE_CLUTTER_DELAY = 1 # clear delay in minutes
 database = motor.motor_asyncio.AsyncIOMotorClient()[DB_NAME]
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -34,7 +34,7 @@ async def is_locked(db_id):
         })
         lock = await database[db_id].find_one({"lock": 1})
     delta = datetime.now() - lock["date"]
-    logger.info("Delta is {}".format(delta))
+    # logger.info("Delta is {}".format(delta))
     if delta <= timedelta(0):
         return True
     else:
@@ -64,7 +64,8 @@ async def register_user(message: types.Message):
         logger.info("Player {} registered in group {}".format(message.from_user.first_name, message.chat.title))
         await bot.send_message(message.chat.id, "{} зарегистрировался".format(message.from_user.first_name))
     else:
-        await message.reply("Вы уже зарегистрировались.")
+        result = await message.reply("Вы уже зарегистрировались.")
+        await remove_clutter(result)
 
 
 @dp.message_handler(commands=["roll"])
@@ -109,6 +110,9 @@ async def show_statistics(message: types.Message):
 
 
 # TODO implement clear count handler
+async def remove_clutter(message: types.Message):
+    await asyncio.sleep(REMOVE_CLUTTER_DELAY * 60)
+    await bot.delete_message(message.chat.id, message.message_id)
 # def remove_clutter(func, message: types.Message):
 #     async def wrapper(message):
 #         await func(message: types.Message)
