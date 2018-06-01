@@ -63,6 +63,7 @@ async def register_user(message: types.Message):
         })
         logger.info("Player {} registered in group {}".format(message.from_user.first_name, message.chat.title))
         await bot.send_message(message.chat.id, "{} зарегистрировался".format(message.from_user.first_name))
+        await remove_clutter(message)
     else:
         result = await message.reply("Вы уже зарегистрировались.")
         await remove_clutter(result, message)
@@ -74,21 +75,26 @@ async def roll_dice(message: types.Message):
         user_count = await database[message.chat.title].find({"status": "active"}).count()
         if user_count == 0:
             await bot.send_message(message.chat.id, "Нет зарегистрировавшихся игроков")
+            await remove_clutter(message)
         elif user_count == 1:
             await bot.send_message(message.chat.id, "Только один игрок зарегистрировался 😐")
+            await remove_clutter(message)
         else:
             winner = (await database[message.chat.title].find({"status": "active"}).limit(1).skip(
                 randint(0, user_count - 1)).to_list(length=LIST_LENGTH))[0]
             await database[message.chat.title].update_one({"user_id": winner["user_id"]}, {"$inc": {"count": 1}})
             if message.chat.title == "Трембол":
                 await bot.send_message(message.chat.id, "Пидор этого часа - {}".format(winner["user_firstname"]))
+                await remove_clutter(message)
             else:
                 await bot.send_message(message.chat.id, "Победитель этого часа - {}".format(winner["user_firstname"]))
+                await remove_clutter(message)
             logger.info("Winner {} count {}".format(winner["user_firstname"], winner["count"] + 1))
     else:
         left_time = (await database[message.chat.title].find_one({"lock": 1}))["date"] - datetime.now()
-        await bot.send_message(message.chat.id, "Час ещё не прошёл\n"
+        result = await bot.send_message(message.chat.id, "Час ещё не прошёл\n"
                                                 "Осталось {}".format(left_time))
+        await remove_clutter(result, message)
 
 
 @dp.message_handler(commands=["stats"])
@@ -96,6 +102,7 @@ async def show_statistics(message: types.Message):
     """Display statistics of players in order"""
     if database[message.chat.title].find_one({"status": "active"}) is None:
         await bot.send_message(message.chat.id, "Нет зарегистрировавшихся игроков")
+        await remove_clutter(message)
     else:
         players = await database[message.chat.title].find({
             "$query": {"status": "active"},
@@ -107,6 +114,7 @@ async def show_statistics(message: types.Message):
         for i in players:
             reply += "{} - {}\n".format(i[0], i[1])
         await bot.send_message(message.chat.id, reply)
+        await remove_clutter(message)
 
 
 # TODO implement clear count handler
@@ -123,11 +131,11 @@ async def remove_clutter(*messages: types.Message):
 #     return wrapper()
 
 
-@dp.message_handler(regexp='(^cat[s]?$|puss)')
-async def cats(message: types.Message):
-    with open('data/cats.jpg', 'rb') as photo:
-        await bot.send_photo(message.chat.id, photo, caption='Cats is here 😺',
-                             reply_to_message_id=message.message_id)
+# @dp.message_handler(regexp='(^cat[s]?$|puss)')
+# async def cats(message: types.Message):
+#     with open('data/cats.jpg', 'rb') as photo:
+#         await bot.send_photo(message.chat.id, photo, caption='Cats is here 😺',
+#                              reply_to_message_id=message.message_id)
 
 
 @dp.message_handler()
