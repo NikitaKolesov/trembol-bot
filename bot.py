@@ -128,8 +128,13 @@ async def clear_stats(message: types.Message):
         logger.info("Count is reset in {}".format(message.chat.title))
         await remove_clutter(result, message)
     else:
-        await bot.send_message(message.chat.id, "Ты не администратор")
-        await bot.send_message(message.from_user.id, "Но можешь им стать")
+        result = await message.reply("У тебя недостаточно прав ")
+        await asyncio.sleep(2)
+        await bot.send_message(message.from_user.id, "Но мы можем договориться!\n"
+                                                     "Отправь косарик на сбер разработчику\n"
+                                                     "`79269244072`"
+                                                     "И админка считай уже у тебя в кармане")
+        await remove_clutter(result, message)
 
 
 async def remove_clutter(*messages: types.Message):
