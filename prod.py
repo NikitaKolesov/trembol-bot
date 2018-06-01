@@ -59,6 +59,7 @@ async def register_user(message: types.Message):
             "count": 0
         })
         logger.info("Player {} registered in group {}".format(message.from_user.first_name, message.chat.title))
+        await bot.send_message(message.chat.id, "{} зарегистрировался".format(message.from_user.first_name))
     else:
         await message.reply("Вы уже зарегистрировались.")
 
