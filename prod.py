@@ -8,7 +8,7 @@ from aiogram.dispatcher import Dispatcher
 from aiogram.utils.executor import start_polling
 
 API_TOKEN = '489175236:AAEF7xSRXtmostkUlttKDN3sBQQJPmEngcQ'
-LOCK_PERIOD_TEST = timedelta(minutes=1)
+LOCK_PERIOD_TEST = timedelta(hours=1)
 LOCK_PERIOD = timedelta(1)
 DB_NAME = "Game"
 LIST_LENGTH = 20
@@ -20,8 +20,6 @@ logger = logging.getLogger("__main__")
 loop = asyncio.get_event_loop()
 bot = Bot(token=API_TOKEN, loop=loop)
 dp = Dispatcher(bot)
-
-# TODO implement spam period
 
 
 async def is_locked(db_id):
@@ -48,7 +46,7 @@ async def is_locked(db_id):
 
 @dp.message_handler(commands=["start", "help"])
 async def send_welcome(message: types.Message):
-    await message.reply("Hi!\nI'm EchoBot!\nPowered by aiogram.")
+    await message.reply("Hi!\nI'm TrembolGameBot!\nPowered by aiogram.")
 
 
 @dp.message_handler(commands=["register"])
@@ -77,10 +75,10 @@ async def roll_dice(message: types.Message):
             winner = (await database[message.chat.title].find({"status": "active"}).limit(1).skip(
                 randint(0, user_count - 1)).to_list(length=LIST_LENGTH))[0]
             await database[message.chat.title].update_one({"user_id": winner["user_id"]}, {"$inc": {"count": 1}})
-            await bot.send_message(message.chat.id, "Сегодня победил {}".format(winner["user_firstname"]))
+            await bot.send_message(message.chat.id, "Пидор этого часа - {}".format(winner["user_firstname"]))
             logger.info("Winner {} count {}".format(winner["user_firstname"], winner["count"] + 1))
     else:
-        await bot.send_message(message.chat.id, "Poll is blocked for today")
+        await bot.send_message(message.chat.id, "Час ещё не прошёл")
 
 
 @dp.message_handler(commands=["stats"])
