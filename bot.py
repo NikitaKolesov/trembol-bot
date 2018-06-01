@@ -65,7 +65,7 @@ async def register_user(message: types.Message):
         await bot.send_message(message.chat.id, "{} зарегистрировался".format(message.from_user.first_name))
         await remove_clutter(message)
     else:
-        result = await message.reply("Вы уже зарегистрировались.")
+        result = await message.reply("Вы уже зарегистрировались")
         await remove_clutter(result, message)
 
 
@@ -124,9 +124,11 @@ async def clear_stats(message: types.Message):
     if message.from_user.id in admins:
         database[message.chat.title].update_many({"status": "active"},
                                                  {"$set": {"count": 0}})
-        await bot.send_message(message.chat.id, "Данные сброшены")
+        result = await bot.send_message(message.chat.id, "Данные сброшены")
         logger.info("Count is reset in {}".format(message.chat.title))
-    pass
+        await remove_clutter(result, message)
+    else:
+        await bot.send_message(message.chat.id, "Ты не администратор")
 
 
 async def remove_clutter(*messages: types.Message):
