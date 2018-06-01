@@ -113,8 +113,8 @@ async def show_statistics(message: types.Message):
         reply = ""
         for i in players:
             reply += "{} - {}\n".format(i[0], i[1])
-        await bot.send_message(message.chat.id, reply)
-        await remove_clutter(message)
+        result = await bot.send_message(message.chat.id, reply)
+        await remove_clutter(result, message)
 
 
 # TODO implement clear count handler
