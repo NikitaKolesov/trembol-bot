@@ -144,7 +144,7 @@ async def clear_stats(message: types.Message):
 
 @dp.message_handler(commands=["prize"])
 async def prize(message: types.Message):
-    await bot.send_photo(message.chat.id, PRIZE_ID)
+    await bot.send_photo(message.chat.id, PRIZE_ID, caption="Приз первого сезона")
 
 
 async def remove_clutter(*messages: types.Message):
