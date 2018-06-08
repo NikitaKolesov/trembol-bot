@@ -15,7 +15,7 @@ LIST_LENGTH = 20
 REMOVE_CLUTTER_DELAY = 1  # clear delay in minutes
 database = motor.motor_asyncio.AsyncIOMotorClient()[DB_NAME]
 
-logging.basicConfig(level=logging.INFO,
+logging.basicConfig(level=logging.DEBUG,
                     filename="/home/nkolesov/TrembolGameTest/logfile.log",
                     filemode="w",
                     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -141,6 +141,12 @@ async def clear_stats(message: types.Message):
         # await remove_clutter(result1, result2, message)
 
 
+@dp.message_handler(commands=["prize"])
+async def prize(message: types.Message):
+    await bot.send_photo(message.chat.id, file_id)
+    pass
+
+
 async def remove_clutter(*messages: types.Message):
     await asyncio.sleep(REMOVE_CLUTTER_DELAY * 60)
     for message in messages:
@@ -150,14 +156,6 @@ async def remove_clutter(*messages: types.Message):
                                                                              message.chat.title))
 
 
-# def remove_clutter(func, message: types.Message):
-#     async def wrapper(message):
-#         await func(message: types.Message)
-#         await asyncio.sleep(REMOVE_CLUTTER_DELAY * 60)
-#         await bot.delete_message(chat_id, message_id)
-#     return wrapper()
-
-
 # @dp.message_handler(regexp='(^cat[s]?$|puss)')
 # async def cats(message: types.Message):
 #     with open('data/cats.jpg', 'rb') as photo:
@@ -165,9 +163,10 @@ async def remove_clutter(*messages: types.Message):
 #                              reply_to_message_id=message.message_id)
 
 
-# @dp.message_handler()
-# async def echo(message: types.Message):
-#     await bot.send_message(message.chat.id, message.text)
+@dp.message_handler()
+async def echo(message: types.Message):
+    await bot.send_message(message.chat.id, message.text)
+    # logger.info("File id: {}".format(message.photo))
 
 
 if __name__ == '__main__':
