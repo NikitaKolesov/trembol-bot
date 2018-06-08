@@ -43,8 +43,8 @@ async def is_locked(db_id):
     if delta <= timedelta(0):
         return True
     else:
-        # new_date = datetime.combine(datetime.now().date(), datetime.min.time()) + LOCK_PERIOD_TEST
-        new_date = datetime.now() + LOCK_PERIOD_TEST  # TESTING
+        new_date = datetime.combine(datetime.now().date(), datetime.min.time()) + LOCK_PERIOD
+        # new_date = datetime.now() + LOCK_PERIOD_TEST  # TESTING
         await database[db_id].update_one({"lock": 1}, {
             "$set": {"date": new_date}
         })
@@ -98,7 +98,7 @@ async def roll_dice(message: types.Message):
             logger.info("Winner {} count {}".format(winner["user_firstname"], winner["count"] + 1))
     else:
         left_time = (await database[message.chat.title].find_one({"lock": 1}))["date"] - datetime.now()
-        result = await bot.send_message(message.chat.id, "Час ещё не прошёл\n"
+        result = await bot.send_message(message.chat.id, "День ещё не прошёл\n"
                                                          "Осталось {}".format(left_time))
         # await remove_clutter(result, message)
 
