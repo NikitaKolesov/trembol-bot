@@ -14,6 +14,7 @@ DB_NAME = "Game"
 LIST_LENGTH = 20
 REMOVE_CLUTTER_DELAY = 1  # clear delay in minutes
 database = motor.motor_asyncio.AsyncIOMotorClient()[DB_NAME]
+PRIZE_ID = "AgADAgADHKkxG_4C0UioQAEy-dkHTZ5Tqw4ABHGHHuOTmBYmJWMCAAEC"
 
 logging.basicConfig(level=logging.DEBUG,
                     filename="/home/nkolesov/TrembolGameTest/logfile.log",
@@ -143,8 +144,7 @@ async def clear_stats(message: types.Message):
 
 @dp.message_handler(commands=["prize"])
 async def prize(message: types.Message):
-    await bot.send_photo(message.chat.id, file_id)
-    pass
+    await bot.send_photo(message.chat.id, PRIZE_ID)
 
 
 async def remove_clutter(*messages: types.Message):
@@ -163,10 +163,9 @@ async def remove_clutter(*messages: types.Message):
 #                              reply_to_message_id=message.message_id)
 
 
-@dp.message_handler()
-async def echo(message: types.Message):
-    await bot.send_message(message.chat.id, message.text)
-    # logger.info("File id: {}".format(message.photo))
+# @dp.message_handler()
+# async def echo(message: types.Message):
+#     await bot.send_message(message.chat.id, message.text)
 
 
 if __name__ == '__main__':
