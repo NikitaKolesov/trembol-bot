@@ -13,6 +13,7 @@ LOCK_PERIOD = timedelta(1)
 DB_NAME = "Game"
 LIST_LENGTH = 20
 REMOVE_CLUTTER_DELAY = 1  # clear delay in minutes
+REMOVE_CLUTTER = False
 database = motor.motor_asyncio.AsyncIOMotorClient()[DB_NAME]
 PRIZE_ID = "AgADAgADHKkxG_4C0UioQAEy-dkHTZ5Tqw4ABHGHHuOTmBYmJWMCAAEC"
 
@@ -39,7 +40,6 @@ async def is_locked(db_id):
         })
         lock = await database[db_id].find_one({"lock": 1})
     delta = datetime.now() - lock["date"]
-    # logger.info("Delta is {}".format(delta))
     if delta <= timedelta(0):
         return True
     else:
@@ -68,10 +68,10 @@ async def register_user(message: types.Message):
         })
         logger.info("Player {} registered in group {}".format(message.from_user.first_name, message.chat.title))
         await bot.send_message(message.chat.id, "{} зарегистрировался".format(message.from_user.first_name))
-        # await remove_clutter(message)
+        if REMOVE_CLUTTER: await remove_clutter(message)
     else:
         result = await message.reply("Вы уже зарегистрировались")
-        # await remove_clutter(result, message)
+        if REMOVE_CLUTTER: await remove_clutter(result, message)
 
 
 @dp.message_handler(commands=["roll"])
@@ -80,10 +80,10 @@ async def roll_dice(message: types.Message):
         user_count = await database[message.chat.title].find({"status": "active"}).count()
         if user_count == 0:
             await bot.send_message(message.chat.id, "Нет зарегистрировавшихся игроков")
-            # await remove_clutter(message)
+            if REMOVE_CLUTTER: await remove_clutter(message)
         elif user_count == 1:
             await bot.send_message(message.chat.id, "Только один игрок зарегистрировался 😐")
-            # await remove_clutter(message)
+            if REMOVE_CLUTTER: await remove_clutter(message)
         else:
             winner = (await database[message.chat.title].find({"status": "active"}).limit(1).skip(
                 randint(0, user_count - 1)).to_list(length=LIST_LENGTH))[0]
@@ -91,16 +91,16 @@ async def roll_dice(message: types.Message):
                                                           {"$inc": {"count": 1}})
             if message.chat.title == "Трембол":
                 await bot.send_message(message.chat.id, "Пидор этого часа - {}".format(winner["user_firstname"]))
-                # await remove_clutter(message)
+                if REMOVE_CLUTTER: await remove_clutter(message)
             else:
                 await bot.send_message(message.chat.id, "Победитель этого часа - {}".format(winner["user_firstname"]))
-                # await remove_clutter(message)
+                if REMOVE_CLUTTER: await remove_clutter(message)
             logger.info("Winner {} count {}".format(winner["user_firstname"], winner["count"] + 1))
     else:
         left_time = (await database[message.chat.title].find_one({"lock": 1}))["date"] - datetime.now()
         result = await bot.send_message(message.chat.id, "День ещё не прошёл\n"
                                                          "Осталось {}".format(left_time))
-        # await remove_clutter(result, message)
+        if REMOVE_CLUTTER: await remove_clutter(result, message)
 
 
 @dp.message_handler(commands=["stats"])
@@ -108,7 +108,7 @@ async def show_statistics(message: types.Message):
     """Display statistics of players in order"""
     if database[message.chat.title].find_one({"status": "active"}) is None:
         await bot.send_message(message.chat.id, "Нет зарегистрировавшихся игроков")
-        # await remove_clutter(message)
+        if REMOVE_CLUTTER: await remove_clutter(message)
     else:
         players = await database[message.chat.title].find({"$query": {"status": "active"},
                                                            "$orderby": {"count": -1}}).to_list(length=LIST_LENGTH)
@@ -118,7 +118,7 @@ async def show_statistics(message: types.Message):
         for i in players:
             reply += "{} - {}\n".format(i[0], i[1])
         result = await bot.send_message(message.chat.id, reply)
-        # await remove_clutter(result, message)
+        if REMOVE_CLUTTER: await remove_clutter(result, message)
 
 
 # TODO implement clear count handler
@@ -130,7 +130,7 @@ async def clear_stats(message: types.Message):
                                                  {"$set": {"count": 0}})
         result = await bot.send_message(message.chat.id, "Данные сброшены")
         logger.info("Count is reset in {}".format(message.chat.title))
-        # await remove_clutter(result, message)
+        if REMOVE_CLUTTER: await remove_clutter(result, message)
     else:
         result1 = await message.reply("У тебя недостаточно прав 😡")
         await asyncio.sleep(2)
@@ -139,7 +139,7 @@ async def clear_stats(message: types.Message):
                                       "+79269244072\n"
                                       "И админка считай уже у тебя в кармане\n"
                                       "P.S. деньги пойдут на поддержку румынского ВВП")
-        # await remove_clutter(result1, result2, message)
+        if REMOVE_CLUTTER: await remove_clutter(result1, result2, message)
 
 
 @dp.message_handler(commands=["prize"])
