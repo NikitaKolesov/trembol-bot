@@ -90,10 +90,10 @@ async def roll_dice(message: types.Message):
             await database[message.chat.title].update_one({"user_id": winner["user_id"]},
                                                           {"$inc": {"count": 1}})
             if message.chat.title == "Трембол":
-                await bot.send_message(message.chat.id, "Пидор этого часа - {}".format(winner["user_firstname"]))
+                await bot.send_message(message.chat.id, "Пидор этого дня - {}".format(winner["user_firstname"]))
                 if REMOVE_CLUTTER: await remove_clutter(message)
             else:
-                await bot.send_message(message.chat.id, "Победитель этого часа - {}".format(winner["user_firstname"]))
+                await bot.send_message(message.chat.id, "Победитель этого дня - {}".format(winner["user_firstname"]))
                 if REMOVE_CLUTTER: await remove_clutter(message)
             logger.info("Winner {} count {}".format(winner["user_firstname"], winner["count"] + 1))
     else:
@@ -146,6 +146,10 @@ async def clear_stats(message: types.Message):
 async def prize(message: types.Message):
     await bot.send_photo(message.chat.id, PRIZE_ID, caption="Приз первого сезона")
 
+
+@dp.message_handler(commands=[""])
+async def today(message: types.Message):
+    pass
 
 async def remove_clutter(*messages: types.Message):
     await asyncio.sleep(REMOVE_CLUTTER_DELAY * 60)
