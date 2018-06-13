@@ -150,7 +150,7 @@ async def prize(message: types.Message):
 @dp.message_handler(content_types=types.ContentType.PHOTO)
 async def identify_photo(message: types.Message):
     if message.caption is not None:
-        logger.info("There is caption: {}".format(message.caption))
+        logger.info("There is caption: {} in {}".format(message.caption, message.chat.title))
         user = await database[str(message.chat.title)].find_one({"user_firstname": "Nikita"})
         if user is not None:
             logger.info("There is {} in database".format(message.caption))
