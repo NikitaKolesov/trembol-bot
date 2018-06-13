@@ -17,7 +17,7 @@ REMOVE_CLUTTER = False
 database = motor.motor_asyncio.AsyncIOMotorClient()[DB_NAME]
 PRIZE_ID = "AgADAgADHKkxG_4C0UioQAEy-dkHTZ5Tqw4ABHGHHuOTmBYmJWMCAAEC"
 
-logging.basicConfig(level=logging.INFO,
+logging.basicConfig(level=logging.DEBUG,
                     filename="/home/nkolesov/TrembolGameTest/logfile.log",
                     filemode="w",
                     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -145,6 +145,13 @@ async def clear_stats(message: types.Message):
 @dp.message_handler(commands=["prize"])
 async def prize(message: types.Message):
     await bot.send_photo(message.chat.id, PRIZE_ID, caption="Приз первого сезона")
+
+
+@dp.message_handler(commands=["listphotos"])
+async def list_photos(message: types.Message):
+    """List photos for user
+    Usage: /listphotos {user_firstname}"""
+    pass
 
 
 @dp.message_handler(content_types=types.ContentType.PHOTO)
