@@ -147,9 +147,10 @@ async def prize(message: types.Message):
     await bot.send_photo(message.chat.id, PRIZE_ID, caption="Приз первого сезона")
 
 
-@dp.message_handler(commands=[""])
+@dp.message_handler()
 async def today(message: types.Message):
-    pass
+    logger.info("Message.photo: {}".format(message.photo))
+
 
 async def remove_clutter(*messages: types.Message):
     await asyncio.sleep(REMOVE_CLUTTER_DELAY * 60)
