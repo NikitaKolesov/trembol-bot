@@ -150,12 +150,29 @@ async def prize(message: types.Message):
 @dp.message_handler(content_types=types.ContentType.PHOTO)
 async def identify_photo(message: types.Message):
     if message.caption is not None:
-        logger.info("There is caption: {} in {}".format(message.caption, message.chat.title))
-        user = await database[str(message.chat.title)].find_one({"user_firstname": "Nikita"})
-        if user is not None:
-            logger.info("There is {} in database".format(message.caption))
-    logger.info("Message.photo0: {}".format(message.photo[0]))
-    await message.reply("File_id: {}".format(message.photo[0]["file_id"]))
+        # logger.info("There is caption: {} in {}".format(message.caption, message.chat.title))
+        setup = message.caption.split(" ")
+        chat_name = message.caption.split(" ")[1]
+        user_name = message.caption.split(" ")[2]
+        if len(setup) == 3 and setup[0] == "setphoto":
+            if (await database[chat_name].find_one({"user_firstname": user_name})) is not None:
+                await database[chat_name].update_one({"user_firstname": user_name},
+                                                    {"$push": {"photos": message.photo[0]["file_id"]}})
+                logger.info("Photo {} added for {} in {}".format(message.photo[0]["file_id"],
+                                                                 user_name,
+                                                                 chat_name))
+                await bot.send_message(message.chat.id, "New photo is added for {} in {}".format(user_name,
+                                                                                           chat_name))
+                await bot.send_photo(message.chat.id, message.photo[0]["file_id"])
+            else:
+                logger.info("{} is not in {}".format(user_name, chat_name))
+                await bot.send_message(message.chat.id, "{} is not in {}".format(user_name, chat_name))
+        # user = await database[message.chat.title].find_one({"user_firstname": message.chat.title})
+        # if user is not None:
+        #     logger.info("There is {} in database".format(message.caption))
+    else:
+        logger.info("Message.photo0: {}".format(message.photo[0]))
+        await message.reply("File_id: {}".format(message.photo[0]["file_id"]))
 
 
 async def remove_clutter(*messages: types.Message):
