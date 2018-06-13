@@ -152,9 +152,9 @@ async def identify_photo(message: types.Message):
     if message.caption is not None:
         # logger.info("There is caption: {} in {}".format(message.caption, message.chat.title))
         setup = message.caption.split(" ")
-        chat_name = message.caption.split(" ")[1]
-        user_name = message.caption.split(" ")[2]
         if len(setup) == 3 and setup[0] == "setphoto":
+            chat_name = setup[1]
+            user_name = setup[2]
             if (await database[chat_name].find_one({"user_firstname": user_name})) is not None:
                 await database[chat_name].update_one({"user_firstname": user_name},
                                                     {"$push": {"photos": message.photo[0]["file_id"]}})
