@@ -156,6 +156,7 @@ async def list_photos(message: types.Message):
         chat_title = args[0]
         user_firstname = args[1]
         photos = (await database[chat_title].find_one({"user_firstname": user_firstname}))["photos"]
+        logger.info("Photos for {}: {}".format(user_firstname, photos))
         for i in photos:
             await bot.send_photo(message.chat.id, i)
     else:
