@@ -151,6 +151,7 @@ async def prize(message: types.Message):
 async def list_photos(message: types.Message):
     """List photos for user
     Usage: /listphotos {chat_title} {user_firstname}"""
+    logger.info("Commands type {} {}".format(type(message.get_full_command()), message.get_full_command()))
     if len(message.get_full_command()) == 2:
         chat_title = message.get_full_command()[1]
         user_firstname = message.get_full_command()[2]
