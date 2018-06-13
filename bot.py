@@ -147,7 +147,7 @@ async def prize(message: types.Message):
     await bot.send_photo(message.chat.id, PRIZE_ID, caption="Приз первого сезона")
 
 
-@dp.message_handler()
+@dp.message_handler(content_types=ContentType.PHOTO)
 async def today(message: types.Message):
     logger.info("Message.photo: {}".format(message.photo))
 
