@@ -167,9 +167,11 @@ async def identify_photo(message: types.Message):
             else:
                 logger.info("{} is not in {}".format(user_name, chat_name))
                 await bot.send_message(message.chat.id, "{} is not in {}".format(user_name, chat_name))
-        # user = await database[message.chat.title].find_one({"user_firstname": message.chat.title})
-        # if user is not None:
-        #     logger.info("There is {} in database".format(message.caption))
+        else:
+            await bot.send_message(message.chat.id, "Command in caption is not specified\n"
+                                                    "Commands:\n"
+                                                    "setphoto {chat_title} {user_firstname}")
+            logger.info("Incorrect command in caption: {}".format(message.caption))
     else:
         logger.info("Message.photo0: {}".format(message.photo[0]))
         await message.reply("File_id: {}".format(message.photo[0]["file_id"]))
