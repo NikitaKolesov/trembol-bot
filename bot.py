@@ -150,8 +150,11 @@ async def prize(message: types.Message):
 @dp.message_handler(commands=["listphotos"])
 async def list_photos(message: types.Message):
     """List photos for user
-    Usage: /listphotos {user_firstname}"""
-    pass
+    Usage: /listphotos {chat_title} {user_firstname}"""
+    logger.info("Message args: {}".format(message.get_args()))
+    if len(message.get_args()) == 2:
+        chat_title = message.get_args()[0]
+        user_firstname = message.get_args()[1]
 
 
 @dp.message_handler(content_types=types.ContentType.PHOTO)
@@ -160,20 +163,20 @@ async def identify_photo(message: types.Message):
         # logger.info("There is caption: {} in {}".format(message.caption, message.chat.title))
         setup = message.caption.split(" ")
         if len(setup) == 3 and setup[0] == "setphoto":
-            chat_name = setup[1]
-            user_name = setup[2]
-            if (await database[chat_name].find_one({"user_firstname": user_name})) is not None:
-                await database[chat_name].update_one({"user_firstname": user_name},
+            chat_title = setup[1]
+            user_firstname = setup[2]
+            if (await database[chat_title].find_one({"user_firstname": user_firstname})) is not None:
+                await database[chat_title].update_one({"user_firstname": user_firstname},
                                                     {"$push": {"photos": message.photo[0]["file_id"]}})
                 logger.info("Photo {} added for {} in {}".format(message.photo[0]["file_id"],
-                                                                 user_name,
-                                                                 chat_name))
-                await bot.send_message(message.chat.id, "New photo is added for {} in {}".format(user_name,
-                                                                                           chat_name))
+                                                                 user_firstname,
+                                                                 chat_title))
+                await bot.send_message(message.chat.id, "New photo is added for {} in {}".format(user_firstname,
+                                                                                           chat_title))
                 await bot.send_photo(message.chat.id, message.photo[0]["file_id"])
             else:
-                logger.info("{} is not in {}".format(user_name, chat_name))
-                await bot.send_message(message.chat.id, "{} is not in {}".format(user_name, chat_name))
+                logger.info("{} is not in {}".format(user_firstname, chat_title))
+                await bot.send_message(message.chat.id, "{} is not in {}".format(user_firstname, chat_title))
         else:
             await bot.send_message(message.chat.id, "Command in caption is not specified\n"
                                                     "Commands:\n"
