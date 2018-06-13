@@ -151,13 +151,15 @@ async def prize(message: types.Message):
 async def list_photos(message: types.Message):
     """List photos for user
     Usage: /listphotos {chat_title} {user_firstname}"""
-    logger.info("Commands type {} {}".format(type(message.get_full_command()), message.get_full_command()))
-    if len(message.get_full_command()) == 2:
-        chat_title = message.get_full_command()[1]
-        user_firstname = message.get_full_command()[2]
+    args = message.get_args().split(" ")
+    if len(args) == 2:
+        chat_title = args[0]
+        user_firstname = args[1]
         photos = (await database[chat_title].find_one({"user_firstname": user_firstname}))["photos"]
         for i in photos:
             await bot.send_photo(message.chat.id, i)
+    else:
+        await bot.send_message(message.chat.id, "Wrong usage")
 
 
 @dp.message_handler(content_types=types.ContentType.PHOTO)
