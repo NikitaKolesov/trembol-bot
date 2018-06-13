@@ -17,7 +17,7 @@ REMOVE_CLUTTER = False
 database = motor.motor_asyncio.AsyncIOMotorClient()[DB_NAME]
 PRIZE_ID = "AgADAgADHKkxG_4C0UioQAEy-dkHTZ5Tqw4ABHGHHuOTmBYmJWMCAAEC"
 
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
                     filename="/home/nkolesov/TrembolGameTest/logfile.log",
                     filemode="w",
                     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -149,6 +149,8 @@ async def prize(message: types.Message):
 
 @dp.message_handler(content_types=types.ContentType.PHOTO)
 async def identify_photo(message: types.Message):
+    if message.caption is not None:
+        logger.info("There is caption")
     logger.info("Message.photo0: {}".format(message.photo[0]))
     await message.reply("File_id: {}".format(message.photo[0]["file_id"]))
 
