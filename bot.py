@@ -149,7 +149,10 @@ async def prize(message: types.Message):
 
 @dp.message_handler(content_types=types.ContentType.PHOTO)
 async def today(message: types.Message):
-    logger.info("Message.photo: {}".format(message.photo[0]))
+    logger.info("Message.photo0: {}".format(message.photo[0]))
+    logger.info("Message.photo1: {}".format(message.photo[1]))
+    await bot.send_photo(message.chat.id, message.photo[0]["file_id"])
+    await bot.send_photo(message.chat.id, message.photo[1]["file_id"])
 
 
 async def remove_clutter(*messages: types.Message):
