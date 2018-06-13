@@ -149,7 +149,7 @@ async def prize(message: types.Message):
 
 @dp.message_handler(content_types=types.ContentType.PHOTO)
 async def today(message: types.Message):
-    logger.info("Message.photo: {}".format(message.photo))
+    logger.info("Message.photo: {}".format(message.photo[0]))
 
 
 async def remove_clutter(*messages: types.Message):
