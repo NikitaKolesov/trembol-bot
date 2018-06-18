@@ -32,6 +32,7 @@ dp = Dispatcher(bot)
 
 
 async def is_locked(db_id):
+    """Check if another roll is allowed, set new lock if possible"""
     lock = await database[db_id].find_one({"lock": 1})
     if lock is None:
         await database[db_id].insert_one({
@@ -59,6 +60,7 @@ async def send_welcome(message: types.Message):
 
 @dp.message_handler(commands=["register"])
 async def register_user(message: types.Message):
+    """Register new user or send message if already registered"""
     if await database[message.chat.title].find_one({"user_id": message.from_user.id}) is None:
         await database[message.chat.title].insert_one({
             "user_id": message.from_user.id,
@@ -76,6 +78,7 @@ async def register_user(message: types.Message):
 
 @dp.message_handler(commands=["roll"])
 async def roll_dice(message: types.Message):
+    """Randomly choose a winner of the day"""
     if not await is_locked(message.chat.title):
         user_count = await database[message.chat.title].find({"status": "active"}).count()
         if user_count == 0:
@@ -124,6 +127,7 @@ async def show_statistics(message: types.Message):
 # TODO implement clear count handler
 @dp.message_handler(commands=["reset"])
 async def clear_stats(message: types.Message):
+    """Clear stats (can be performed by admin only)"""
     admins = (await database[message.chat.title].find_one({"admins": {"$exists": 1}}))["admins"]
     if message.from_user.id in admins:
         database[message.chat.title].update_many({"status": "active"},
@@ -165,6 +169,8 @@ async def list_photos(message: types.Message):
 
 @dp.message_handler(content_types=types.ContentType.PHOTO)
 async def identify_photo(message: types.Message):
+    """All photo messages handler
+    Usage: setphoto {chat_title} {user_firstname}"""
     if message.caption is not None:
         setup = message.caption.split(" ")
         if len(setup) == 3 and setup[0] == "setphoto":
@@ -193,6 +199,7 @@ async def identify_photo(message: types.Message):
 
 
 async def remove_clutter(*messages: types.Message):
+    """Can remove clutter messages"""
     await asyncio.sleep(REMOVE_CLUTTER_DELAY * 60)
     for message in messages:
         await bot.delete_message(message.chat.id, message.message_id)
