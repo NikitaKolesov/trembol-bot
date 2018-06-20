@@ -102,7 +102,8 @@ async def roll_dice(message: types.Message):
                 await bot.send_photo(message.chat.id, choice(winner["photos"]), caption="Пидор дня")
                 await remove_clutter(message)
             else:
-                await bot.send_message(message.chat.id, "Победитель этого дня - {}".format(winner["user_firstname"]))
+                # await bot.send_message(message.chat.id, "Победитель этого дня - {}".format(winner["user_firstname"]))
+                await bot.send_photo(message.chat.id, choice(winner["photos"]), caption="Победитель дня")
                 await remove_clutter(message)
             logger.info("Winner {} count {}".format(winner["user_firstname"], winner["count"] + 1))
     else:
