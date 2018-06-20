@@ -93,7 +93,7 @@ async def roll_dice(message: types.Message):
 
             # Save winner info in lock for getting it's photo
             await database[message.chat.title].update_one({"lock": {"$exists": 1}},
-                                                    {"winner": winner})
+                                                          {"$set": {"winner": winner}})
 
             # Increment winner count
             await database[message.chat.title].update_one({"user_id": winner["user_id"]},
