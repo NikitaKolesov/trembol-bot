@@ -2,7 +2,7 @@ import asyncio
 import logging
 from datetime import datetime, timedelta
 import motor.motor_asyncio
-from random import randint
+from random import randint, choice
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils.executor import start_polling
@@ -90,10 +90,16 @@ async def roll_dice(message: types.Message):
         else:
             winner = (await database[message.chat.title].find({"status": "active"}).limit(1).skip(
                 randint(0, user_count - 1)).to_list(length=LIST_LENGTH))[0]
+
+            # Save winner info in lock for getting it's photo
+            await database[message.chat.title].update_one({"lock": {"$exists": 1}},
+                                                    {"winner": winner})
+
+            # Increment winner count
             await database[message.chat.title].update_one({"user_id": winner["user_id"]},
                                                           {"$inc": {"count": 1}})
             if message.chat.title == "Трембол":
-                await bot.send_message(message.chat.id, "Пидор этого дня - {}".format(winner["user_firstname"]))
+                await bot.send_photo(message.chat.id, choice(winner["photos"]), caption="Пидор дня")
                 await remove_clutter(message)
             else:
                 await bot.send_message(message.chat.id, "Победитель этого дня - {}".format(winner["user_firstname"]))
