@@ -207,7 +207,7 @@ async def identify_photo(message: types.Message):
 
 async def remove_clutter(*messages: types.Message):
     """Can remove clutter messages"""
-    pass
+    if not REMOVE_CLUTTER: return 0
     await asyncio.sleep(REMOVE_CLUTTER_DELAY * 60)
     for message in messages:
         await bot.delete_message(message.chat.id, message.message_id)
