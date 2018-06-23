@@ -191,7 +191,7 @@ async def identify_photo(message: types.Message):
                                                                  chat_title))
                 await bot.send_message(message.chat.id, "New photo is added for {} in {}".format(user_firstname,
                                                                                            chat_title))
-                await bot.send_photo(message.chat.id, message.photo[0]["file_id"])
+                # await bot.send_photo(message.chat.id, message.photo[0]["file_id"])
             else:
                 logger.info("{} is not in {}".format(user_firstname, chat_title))
                 await bot.send_message(message.chat.id, "{} is not in {}".format(user_firstname, chat_title))
