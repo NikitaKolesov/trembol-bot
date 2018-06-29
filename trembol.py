@@ -16,6 +16,8 @@ REMOVE_CLUTTER_DELAY = 1  # clear delay in minutes
 REMOVE_CLUTTER = False
 database = motor.motor_asyncio.AsyncIOMotorClient()[DB_NAME]
 PRIZE_ID = "AgADAgADHKkxG_4C0UioQAEy-dkHTZ5Tqw4ABHGHHuOTmBYmJWMCAAEC"
+TREMBOL_CHAT_ID = -146482038
+BOT_TESTING_CHAT_ID = -1001156869859
 
 logging.basicConfig(level=logging.DEBUG,
                     filename="/home/nkolesov/TrembolGameTest/logfile.log",
@@ -228,10 +230,10 @@ async def get_chat_id(message: types.Message):
     await bot.send_message(message.chat.id, str(message.chat.id))
 
 
-# async def forward_messages(message: types.Message):
-#     for i in range(1,25):
-#         bot.forward_message(message.chat.id)
-#     pass
+@dp.message_handler(commands=["migrate"])
+async def forward_messages(message: types.Message):
+    for i in range(1,25):
+        await bot.forward_message(BOT_TESTING_CHAT_ID, message.chat.id, i)
 
 
 # @dp.message_handler(regexp='(^cat[s]?$|puss)')
