@@ -233,7 +233,7 @@ async def get_chat_id(message: types.Message):
 @dp.message_handler(commands=["migrate"])
 async def forward_messages(message: types.Message):
     for i in range(1,25):
-        await bot.forward_message(BOT_TESTING_CHAT_ID, message.chat.id, i)
+        await bot.forward_message(BOT_TESTING_CHAT_ID, message.chat.id, message.message_id - 3)
 
 
 # @dp.message_handler(regexp='(^cat[s]?$|puss)')
