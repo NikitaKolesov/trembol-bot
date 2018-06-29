@@ -223,6 +223,16 @@ async def remove_clutter(*messages: types.Message):
                                                                              message.from_user.username,
                                                                              message.chat.title))
 
+@dp.message_handler(commands=["chat_id"])
+async def get_chat_id(message: types.Message):
+    await bot.send_message(message.chat.id, str(message.chat.id))
+
+
+# async def forward_messages(message: types.Message):
+#     for i in range(1,25):
+#         bot.forward_message(message.chat.id)
+#     pass
+
 
 # @dp.message_handler(regexp='(^cat[s]?$|puss)')
 # async def cats(message: types.Message):
