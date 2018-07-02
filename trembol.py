@@ -101,6 +101,14 @@ async def roll_dice(message: types.Message):
             await database[message.chat.title].update_one({"user_id": winner["user_id"]},
                                                           {"$inc": {"count": 1}})
             if message.chat.title == "Трембол":
+                result = await bot.send_message(message.chat.id, "Выбираем пидора")
+                await asyncio.sleep(0.7)
+                await result.edit_text("Выбираем пидора.")
+                await asyncio.sleep(0.7)
+                await result.edit_text("Выбираем пидора..")
+                await asyncio.sleep(0.7)
+                await result.edit_text("Выбираем пидора...")
+                await asyncio.sleep(0.7)
                 await bot.send_photo(message.chat.id, choice(winner["photos"]), caption="Пидор дня")
                 await remove_clutter(message)
             else:
