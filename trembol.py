@@ -18,11 +18,16 @@ database = motor.motor_asyncio.AsyncIOMotorClient()[DB_NAME]
 PRIZE_ID = "AgADAgADHKkxG_4C0UioQAEy-dkHTZ5Tqw4ABHGHHuOTmBYmJWMCAAEC"
 TREMBOL_CHAT_ID = -146482038
 BOT_TESTING_CHAT_ID = -1001156869859
+LOG_TO_FILE = False
 
-logging.basicConfig(level=logging.DEBUG,
-                    filename="/home/nkolesov/TrembolGameTest/logfile.log",
-                    filemode="w",
-                    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+if LOG_TO_FILE:
+    logging.basicConfig(level=logging.DEBUG,
+                        filename="/home/nkolesov/TrembolGameTest/logfile.log",
+                        filemode="w",
+                        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+else:
+    logging.basicConfig(level=logging.DEBUG,
+                        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("__main__")
 
 loop = asyncio.get_event_loop()
