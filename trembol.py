@@ -21,7 +21,7 @@ BOT_TESTING_CHAT_ID = -1001156869859
 LOG_TO_FILE = False
 
 if LOG_TO_FILE:
-    logging.basicConfig(level=logging.DEBUG,
+    logging.basicConfig(level=logging.INFO,
                         filename="/home/nkolesov/TrembolGameTest/logfile.log",
                         filemode="w",
                         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
