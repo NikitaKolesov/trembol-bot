@@ -1,11 +1,14 @@
 import asyncio
 import logging
+import re
 from datetime import datetime, timedelta
-import motor.motor_asyncio
 from random import randint, choice
+
+import motor.motor_asyncio
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils.executor import start_polling
+from requests_html import HTMLSession
 
 API_TOKEN = '489175236:AAEF7xSRXtmostkUlttKDN3sBQQJPmEngcQ'
 LOCK_PERIOD_TEST = timedelta(hours=1)
@@ -19,6 +22,10 @@ PRIZE_ID = "AgADAgADHKkxG_4C0UioQAEy-dkHTZ5Tqw4ABHGHHuOTmBYmJWMCAAEC"
 TREMBOL_CHAT_ID = -146482038
 BOT_TESTING_CHAT_ID = -1001156869859
 LOG_TO_FILE = False
+ZODIAC_SIGNS = (
+    'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra',
+    'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
+)
 
 if LOG_TO_FILE:
     logging.basicConfig(level=logging.INFO,
@@ -127,6 +134,7 @@ async def roll_dice(message: types.Message):
                 await result.edit_text("Выбираем победителя...")
                 await asyncio.sleep(0.7)
                 await bot.send_photo(message.chat.id, choice(winner["photos"]), caption="Победитель дня")
+                await bot.send_message(message.chat.id, horoscope(winner['zodiac_sign']))
                 await remove_clutter(message)
             logger.info("Winner {} count {}".format(winner["user_firstname"], winner["count"] + 1))
     else:
@@ -208,12 +216,12 @@ async def identify_photo(message: types.Message):
             user_firstname = setup[2]
             if (await database[chat_title].find_one({"user_firstname": user_firstname})) is not None:
                 await database[chat_title].update_one({"user_firstname": user_firstname},
-                                                    {"$push": {"photos": message.photo[0]["file_id"]}})
+                                                      {"$push": {"photos": message.photo[0]["file_id"]}})
                 logger.info("Photo {} added for {} in {}".format(message.photo[0]["file_id"],
                                                                  user_firstname,
                                                                  chat_title))
                 await bot.send_message(message.chat.id, "New photo is added for {} in {}".format(user_firstname,
-                                                                                           chat_title))
+                                                                                                 chat_title))
                 # await bot.send_photo(message.chat.id, message.photo[0]["file_id"])
             else:
                 logger.info("{} is not in {}".format(user_firstname, chat_title))
@@ -238,6 +246,7 @@ async def remove_clutter(*messages: types.Message):
                                                                              message.from_user.username,
                                                                              message.chat.title))
 
+
 @dp.message_handler(commands=["chat_id"])
 async def get_chat_id(message: types.Message):
     await bot.send_message(message.chat.id, str(message.chat.id))
@@ -245,7 +254,7 @@ async def get_chat_id(message: types.Message):
 
 @dp.message_handler(commands=["migrate"])
 async def forward_messages(message: types.Message):
-    for i in range(1,50):
+    for i in range(1, 50):
         await bot.forward_message(BOT_TESTING_CHAT_ID, message.chat.id, message.message_id - i)
 
 
@@ -259,6 +268,20 @@ async def forward_messages(message: types.Message):
 # @dp.message_handler()
 # async def echo(message: types.Message):
 #     await bot.send_message(message.chat.id, message.text)
+
+def horoscope(zodiac_sign):
+    session = HTMLSession()
+    if datetime.now().weekday() != 4:
+        r = session.get('http://ignio.com/r/dailyanti')
+    else:
+        r = session.get('http://ignio.com/r/dailyero')
+    m = re.search("<!-- var ignioText.*1: new Array\('<p>(.*)</p>'\), 2:", r.html.text)
+    sent = m.group(1)
+    spl = sent.split("</p>','<p>")
+    horo = {}
+    for i, sign in enumerate(ZODIAC_SIGNS):
+        horo[sign] = spl[i]
+    return horo[zodiac_sign]
 
 
 if __name__ == '__main__':
