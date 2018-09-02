@@ -33,7 +33,7 @@ if LOG_TO_FILE:
                         filemode="w",
                         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 else:
-    logging.basicConfig(level=logging.DEBUG,
+    logging.basicConfig(level=logging.INFO,
                         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("__main__")
 
@@ -122,6 +122,13 @@ async def roll_dice(message: types.Message):
                 await result.edit_text("Выбираем пидора...")
                 await asyncio.sleep(0.7)
                 await bot.send_photo(message.chat.id, choice(winner["photos"]), caption="Пидор дня")
+                # horoscope part
+                if datetime.now().weekday() != 4:
+                    await bot.send_message(message.chat.id, 'Гороскоп для пидора')
+                else:
+                    await bot.send_message(message.chat.id, 'Пятничный эрогороскоп для пидора')
+                await bot.send_message(message.chat.id, horoscope(winner['zodiac_sign']))
+                # end of horoscope part
                 await remove_clutter(message)
             else:
                 # await bot.send_message(message.chat.id, "Победитель этого дня - {}".format(winner["user_firstname"]))
@@ -134,7 +141,13 @@ async def roll_dice(message: types.Message):
                 await result.edit_text("Выбираем победителя...")
                 await asyncio.sleep(0.7)
                 await bot.send_photo(message.chat.id, choice(winner["photos"]), caption="Победитель дня")
+                # horoscope part
+                if datetime.now().weekday() != 4:
+                    await bot.send_message(message.chat.id, 'Гороскоп для победителя')
+                else:
+                    await bot.send_message(message.chat.id, 'Пятничный эрогороскоп для победителя')
                 await bot.send_message(message.chat.id, horoscope(winner['zodiac_sign']))
+                # end of horoscope part
                 await remove_clutter(message)
             logger.info("Winner {} count {}".format(winner["user_firstname"], winner["count"] + 1))
     else:
