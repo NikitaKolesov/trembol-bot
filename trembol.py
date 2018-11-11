@@ -29,13 +29,10 @@ ZODIAC_SIGNS = (
 
 if LOG_TO_FILE:
     logging.basicConfig(level=logging.INFO,
-                        filename="/home/nkolesov/TrembolGameTest/logfile.log",
-                        filemode="w",
-                        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+                        filename="/home/nkolesov/TrembolGameTest/logfile.log", filemode="w")
 else:
-    logging.basicConfig(level=logging.INFO,
-                        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-logger = logging.getLogger("__main__")
+    logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 loop = asyncio.get_event_loop()
 bot = Bot(token=API_TOKEN, loop=loop)
@@ -90,18 +87,68 @@ async def register_user(message: types.Message):
         await remove_clutter(result, message)
 
 
+async def choice_animation(message: types.Message):
+    """Create a waiting for choice animation
+
+    Example:
+        Выбираем победителя
+
+        Выбираем победителя.
+
+        Выбираем победителя..
+
+        Выбираем победителя...
+
+    :param message: message object to edit message
+    """
+    # TODO reimplement with async for
+    await asyncio.sleep(0.7)
+    await message.edit_text(f'{message.text}.')
+    await asyncio.sleep(0.7)
+    await message.edit_text(f'{message.text}..')
+    await asyncio.sleep(0.7)
+    await message.edit_text(f'{message.text}...')
+    await asyncio.sleep(0.7)
+    # async for i in asyncio.range:
+    #     await message.edit_text(f'{message.text}.')
+    #     await asyncio.sleep(0.7)
+
+
+async def enough_players(message: types.Message, n: int) -> bool:
+    """Check if number of registered players is enough
+    Send info messages that there are not enough players
+
+    :param message: message object to send response
+    :param n: number of registered players
+    :return: if n>=2 True, else False
+    """
+    if n == 0:
+        await bot.send_message(message.chat.id, "Нет зарегистрировавшихся игроков")
+        return False
+    elif n == 1:
+        await bot.send_message(message.chat.id, "Только один игрок зарегистрировался 😐")
+        return False
+    return True
+
+
+async def send_winner(message: types.Message, winner, winner_title: tuple):
+    result = await bot.send_message(message.chat.id, f"Выбираем {winner_title[1]}")
+    await choice_animation(result)
+    await bot.send_photo(message.chat.id, choice(winner["photos"]), caption=f"{winner_title[0]} дня")
+    # horoscope part
+    if datetime.now().weekday() != 4:
+        await bot.send_message(message.chat.id, f'Гороскоп для {winner_title[1]}')
+    else:
+        await bot.send_message(message.chat.id, f'Пятничный эрогороскоп для {winner_title[1]}')
+    await bot.send_message(message.chat.id, horoscope(winner['zodiac_sign']))
+
+
 @dp.message_handler(commands=["roll"])
 async def roll_dice(message: types.Message):
     """Randomly choose a winner of the day"""
     if not await is_locked(message.chat.title):
         user_count = await database[message.chat.title].find({"status": "active"}).count()
-        if user_count == 0:
-            await bot.send_message(message.chat.id, "Нет зарегистрировавшихся игроков")
-            await remove_clutter(message)
-        elif user_count == 1:
-            await bot.send_message(message.chat.id, "Только один игрок зарегистрировался 😐")
-            await remove_clutter(message)
-        else:
+        if await enough_players(message, user_count):
             winner = (await database[message.chat.title].find({"status": "active"}).limit(1).skip(
                 randint(0, user_count - 1)).to_list(length=LIST_LENGTH))[0]
 
@@ -113,42 +160,9 @@ async def roll_dice(message: types.Message):
             await database[message.chat.title].update_one({"user_id": winner["user_id"]},
                                                           {"$inc": {"count": 1}})
             if message.chat.title == "Трембол":
-                result = await bot.send_message(message.chat.id, "Выбираем пидора")
-                await asyncio.sleep(0.7)
-                await result.edit_text("Выбираем пидора.")
-                await asyncio.sleep(0.7)
-                await result.edit_text("Выбираем пидора..")
-                await asyncio.sleep(0.7)
-                await result.edit_text("Выбираем пидора...")
-                await asyncio.sleep(0.7)
-                await bot.send_photo(message.chat.id, choice(winner["photos"]), caption="Пидор дня")
-                # horoscope part
-                if datetime.now().weekday() != 4:
-                    await bot.send_message(message.chat.id, 'Гороскоп для пидора')
-                else:
-                    await bot.send_message(message.chat.id, 'Пятничный эрогороскоп для пидора')
-                await bot.send_message(message.chat.id, horoscope(winner['zodiac_sign']))
-                # end of horoscope part
-                await remove_clutter(message)
+                await send_winner(message, winner, ('Пидор', 'Пидора'))
             else:
-                # await bot.send_message(message.chat.id, "Победитель этого дня - {}".format(winner["user_firstname"]))
-                result = await bot.send_message(message.chat.id, "Выбираем победителя")
-                await asyncio.sleep(0.7)
-                await result.edit_text("Выбираем победителя.")
-                await asyncio.sleep(0.7)
-                await result.edit_text("Выбираем победителя..")
-                await asyncio.sleep(0.7)
-                await result.edit_text("Выбираем победителя...")
-                await asyncio.sleep(0.7)
-                await bot.send_photo(message.chat.id, choice(winner["photos"]), caption="Победитель дня")
-                # horoscope part
-                if datetime.now().weekday() != 4:
-                    await bot.send_message(message.chat.id, 'Гороскоп для победителя')
-                else:
-                    await bot.send_message(message.chat.id, 'Пятничный эрогороскоп для победителя')
-                await bot.send_message(message.chat.id, horoscope(winner['zodiac_sign']))
-                # end of horoscope part
-                await remove_clutter(message)
+                await send_winner(message, winner, ('Победитель', 'Победителя'))
             logger.info("Winner {} count {}".format(winner["user_firstname"], winner["count"] + 1))
     else:
         left_time = (await database[message.chat.title].find_one({"lock": 1}))["date"] - datetime.now()
@@ -166,7 +180,6 @@ async def show_statistics(message: types.Message):
     else:
         players = await database[message.chat.title].find({"$query": {"status": "active"},
                                                            "$orderby": {"count": -1}}).to_list(length=LIST_LENGTH)
-        # TODO reimplement formatting
         players = [(i["user_firstname"], i["count"]) for i in players]
         reply = ""
         for i in players:
@@ -175,7 +188,6 @@ async def show_statistics(message: types.Message):
         await remove_clutter(result, message)
 
 
-# TODO implement clear count handler
 @dp.message_handler(commands=["reset"])
 async def clear_stats(message: types.Message):
     """Clear stats (can be performed by admin only)"""
