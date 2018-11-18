@@ -1,3 +1,0 @@
-aiogram
-motor
-requests_html

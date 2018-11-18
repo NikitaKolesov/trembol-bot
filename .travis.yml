@@ -1,0 +1,12 @@
+language: python
+sudo: required
+dist: xenial
+python: "3.7"
+services: mongodb
+install:
+  - pipenv install
+  - pipenv install codecov pytest-cov
+script:
+  - python -m pytest --cov=./ tests/test_models.py
+after_script:
+  - codecov

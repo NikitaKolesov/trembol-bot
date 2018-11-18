@@ -1,0 +1,25 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+marshmallow = "==3.0.0b20"
+aiogram = "*"
+motor = "*"
+requests-html = "*"
+marshmallow-enum = "*"
+ipython = "*"
+deepdiff = "*"
+pytest = "*"
+mimesis = "*"
+coverage = "*"
+pytest-asyncio = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true
