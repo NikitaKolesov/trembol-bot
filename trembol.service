@@ -1,0 +1,10 @@
+[Unit]
+Description=Trembol bot service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/python3.7 /home/Nikita.Kolesov/trembol-bot/trembol.py
+
+[Install]
+WantedBy=multi-user.target
